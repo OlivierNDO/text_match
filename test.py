@@ -404,17 +404,42 @@ embedding_gen = EmbeddingGenerator()
 wiki_embed = embedding_gen.embed_document_text(wiki_text)
 query_embed = embedding_gen.embed_query(test_query)
 similarities = [float(cosine_similarity(query_embed, w_emb)) for w_emb in wiki_embed]
-relevant_sections = find_relevant_sections_with_scores(similarities, std_factor=1.0, context_factor = 0.5, max_chunks_in_section = 3)
-prioritized_sections = prioritize_sections(relevant_sections, max_sections = 3)
+relevant_sections = find_relevant_sections_with_scores(similarities, std_factor=1.0, context_factor = 0.5, max_chunks_in_section = 1)
+prioritized_sections = prioritize_sections(relevant_sections, max_sections = 1)
 final_text = " | ".join([" ".join([embedding_gen.text_chunks[i] for i in section["indices"]]) for section in prioritized_sections])
 llm_prompt = make_rag_question_answer_prompt(query = test_query, supporting_text = final_text, max_tokens = 128000)
 client = nlpcloud.Client('llama-3-1-405b', os.environ['NLP_CLOUD_TOKEN'], gpu=True)
 rag_answer = client.question(llm_prompt)['answer']
-print(rag_answer)
+rag_answer_with_justification = f"""
+High-similarity text:
+    \t {final_text}
+    
+    
+Answer:
+    \t {rag_answer}
+
+"""
+
+
+print(rag_answer_with_justification)
 
 # Much better
 """
-Donald Trump often comments "so true" when he retweets himself.
+High-similarity text:
+    	 their authors were.[30] At times, Trump retweeted himself,[31] and sometimes commented "so true" while doing so.[32]
+        An investigation by The New York Times published in November 2019, found that, during his time in office to date,
+        Trump had already retweeted at least 145 accounts that "have pushed conspiracy or fringe content, including more than 
+        two dozen that have since been suspended."[13]
+        As Trump continued to issue brief statements, his spokesperson Liz Harrington tweeted screenshots of them under
+        the Save America logo from June 2021 to June 2022.[33] Since then, however, her Twitter handle @realLizUSA 
+        has been infrequently | Donald Trump's use of social media attracted attention worldwide since he joined Twitter
+        in May 2009. On his most prolific day, June 5, 2020, he tweeted 200 times.[46]
+        Tweets counted through Trump Twitter Archive are shown below.[47]
+        In addition to the tweets he put out, he was also the intended recipient of tweets by others. The first incident took place in 2016, using the guessed password "yourefired".
+
+
+Answer:
+    	 Donald Trump often comments "so true" when he retweets himself.
 """
 
 
