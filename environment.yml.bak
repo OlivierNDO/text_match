@@ -1,0 +1,14 @@
+name: tm_env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - lxml
+  - numpy
+  - pandas
+  - python-dotenv
+  - pip
+  - pip:
+      - nlpcloud
+      - sentence-transformers

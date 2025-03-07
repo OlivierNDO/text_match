@@ -1,0 +1,4 @@
+tm_env/
+.env
+archive/
+**/.ipynb_checkpoints/
